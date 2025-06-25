@@ -1,130 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resume Analyzer</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #e0eafc, #cfdef3);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background-color: white;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 26px;
-      color: #333;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin: 15px 0 5px;
-      font-weight: 600;
-      color: #555;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: 0.2s;
-    }
-    input:focus, textarea:focus {
-      border-color: #5a9df9;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(90, 157, 249, 0.2);
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: linear-gradient(to right, #4A00E0, #8E2DE2);
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: linear-gradient(to right, #8E2DE2, #4A00E0);
-    }
-    .result {
-      margin-top: 30px;
-      text-align: left;
-      animation: fadeIn 0.4s ease;
-    }
-    .result h2 {
-      color: #333;
-    }
-    .result ul {
-      margin-top: 10px;
-      padding-left: 20px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>Resume Analyzer</h1>
-    <label for="role">Role you're applying for:</label>
-    <input type="text" id="role" placeholder="e.g., Backend Developer">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow-2xl rounded-2xl p-8 max-w-2xl w-full">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Resume Analyzer</h1>
 
-    <label for="resume">Paste your resume text:</label>
-    <textarea id="resume" rows="6" placeholder="Paste resume here..."></textarea>
+    <form id="resumeForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Role you're applying for:</label>
+        <input type="text" id="role" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="e.g. Frontend Developer" required />
+      </div>
 
-    <button onclick="analyzeResume()">Analyze Resume</button>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Paste your resume text:</label>
+        <textarea id="resumeText" rows="6" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300" placeholder="Paste resume here..." required></textarea>
+      </div>
 
-    <div class="result" id="result" style="display: none;">
-      <h2>Score: <span id="score"></span>/100</h2>
-      <h3>Suggestions:</h3>
-      <ul id="suggestions"></ul>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Analyze Resume</button>
+    </form>
+
+    <div id="result" class="mt-6 hidden">
+      <h2 class="text-xl font-semibold text-gray-800">Score: <span id="score" class="text-blue-600"></span></h2>
+      <h3 class="text-lg mt-3 font-medium text-gray-700">Suggestions:</h3>
+      <ul id="suggestions" class="list-disc list-inside text-gray-600 mt-1"></ul>
     </div>
   </div>
 
   <script>
-    async function analyzeResume() {
+    const form = document.getElementById("resumeForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
       const role = document.getElementById("role").value;
-      const resume = document.getElementById("resume").value;
+      const resumeText = document.getElementById("resumeText").value;
 
       const response = await fetch("http://127.0.0.1:5000/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, resume })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ role, resume_text: resumeText })
       });
 
       const data = await response.json();
-      document.getElementById("score").textContent = data.score;
+
+      document.getElementById("score").textContent = `${data.score}/100`;
       const suggestionsList = document.getElementById("suggestions");
       suggestionsList.innerHTML = "";
-
-      data.suggestions.forEach(item => {
+      data.suggestions.forEach(s => {
         const li = document.createElement("li");
-        li.textContent = item;
+        li.textContent = s;
         suggestionsList.appendChild(li);
       });
 
-      document.getElementById("result").style.display = "block";
-    }
+      document.getElementById("result").classList.remove("hidden");
+    });
   </script>
 </body>
 </html>
